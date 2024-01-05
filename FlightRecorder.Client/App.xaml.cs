@@ -131,6 +131,8 @@ public partial class App : Application
         services.AddTransient<DrawingLogic>();
         services.AddTransient<ImageLogic>();
         services.AddTransient<ThrottleLogic>();
+
+        services.AddSingleton<TriggerRecordingLogic>();
     }
 
     private void Application_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)

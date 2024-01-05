@@ -3,6 +3,7 @@ using FlightRecorder.Client.SimConnectMSFS;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Win32;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Globalization;
 using System.IO;
@@ -11,6 +12,7 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Interop;
 
 namespace FlightRecorder.Client;
@@ -29,10 +31,13 @@ public partial class MainWindow : BaseWindow
     private readonly ShortcutKeyLogic shortcutKeyLogic;
     private readonly WindowFactory windowFactory;
     private readonly IRecorderLogic recorderLogic;
+    private readonly TriggerRecordingLogic triggerRecordingLogic;
 
     private readonly string currentVersion;
 
     private IntPtr Handle;
+
+    public bool RecordLandings { get; set; }
 
     public MainWindow(ILogger<MainWindow> logger,
         IConnector connector,
@@ -57,6 +62,7 @@ public partial class MainWindow : BaseWindow
         this.shortcutKeyLogic = shortcutKeyLogic;
         this.windowFactory = windowFactory;
         this.recorderLogic = orchestrator.RecorderLogic;
+                
 
         stateMachine.StateChanged += StateMachine_StateChanged;
 
@@ -64,6 +70,8 @@ public partial class MainWindow : BaseWindow
         connector.Closed += Connector_Closed;
 
         DataContext = viewModel;
+
+        this.triggerRecordingLogic = new TriggerRecordingLogic(stateMachine);
 
         currentVersion = versionLogic.GetVersion();
         Title += " " + currentVersion;
@@ -91,6 +99,10 @@ public partial class MainWindow : BaseWindow
         HandleSource.AddHook(HandleHook);
         InitializeConnector();
         await shortcutKeyLogic.RegisterAsync(Handle);
+
+        txtFlyingAltitudeThreshold.Text = triggerRecordingLogic.FlightInitiatedAltitude.ToString();
+        txtLandingAltitudeThreshold.Text = triggerRecordingLogic.LandingTransitionAltitude.ToString();
+        txtLandingVSRate.Text = triggerRecordingLogic.LandingVSThreshold.ToString();
     }
 
     private async void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -127,7 +139,11 @@ public partial class MainWindow : BaseWindow
     }
 
     private void Connector_AircraftPositionUpdated(object? sender, AircraftPositionUpdatedEventArgs e)
-    {
+    {                            
+        if (RecordLandings)
+        {
+            triggerRecordingLogic.ProcessAircraftState(e.Position);
+        }
         recorderLogic.NotifyPosition(e.Position);
         replayLogic.NotifyPosition(e.Position);
 
@@ -207,7 +223,7 @@ public partial class MainWindow : BaseWindow
     private void ButtonShowData_Click(object sender, RoutedEventArgs e)
     {
         viewModel.ShowData = !viewModel.ShowData;
-        Height = viewModel.ShowData ? 472 : 307;
+        Height = viewModel.ShowData ? 550 : 375;
     }
 
     private void SpeedMenuItem_Click(object sender, RoutedEventArgs e)
@@ -344,5 +360,53 @@ public partial class MainWindow : BaseWindow
                 MessageBox.Show("Flight Recorder cannot write the file to disk.\nPlease make sure the folder is accessible by Flight Recorder, and you are not overwriting a locked file.", "Flight Recorder", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+    }
+
+    private void chkLandingRecord_Click(object sender, RoutedEventArgs e)
+    {
+        RecordLandings = ((CheckBox)sender).IsChecked ?? false;
+    }
+
+    private void TextBox_LostFocus(object sender, RoutedEventArgs e)
+    {
+        TextBox_SetSetting(sender as TextBox);
+    }
+
+    private void TextBox_KeyUp(object sender, KeyEventArgs e)
+    {
+        if (e.Key != Key.Enter || e.Key != Key.Return)
+            return;
+
+        TextBox_SetSetting(sender as TextBox);
+    }
+
+    private void TextBox_SetSetting(TextBox sender)
+    {
+        int iValue = 0;
+        if (sender == null || string.IsNullOrWhiteSpace(sender.Text))
+            return;
+
+        switch (sender.Name)
+        {
+            case "txtFlyingAltitudeThreshold":
+                if (int.TryParse(sender.Text, out iValue))
+                {
+                    triggerRecordingLogic.FlightInitiatedAltitude = iValue;
+                }
+                break;
+            case "txtLandingAltitudeThreshold":
+                if (int.TryParse(sender.Text, out iValue))
+                {
+                    triggerRecordingLogic.LandingTransitionAltitude = iValue;
+                }
+                break;
+            case "txtLandingVSRate":
+                if (int.TryParse(sender.Text, out iValue))
+                {
+                    triggerRecordingLogic.LandingVSThreshold = iValue;
+                }
+                break;
+           
+        }        
     }
 }

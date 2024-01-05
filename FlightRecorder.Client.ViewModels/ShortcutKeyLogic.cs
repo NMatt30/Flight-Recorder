@@ -58,6 +58,7 @@ public class ShortcutKeyLogic
                 RegisterHotKey(handle, 4, MOD_CONTROL | MOD_ALT | MOD_SHIFT, KeyResume);
                 RegisterHotKey(handle, 5, MOD_CONTROL | MOD_ALT | MOD_SHIFT, KeyStopReplaying);
                 RegisterHotKey(handle, 5, MOD_CONTROL | MOD_ALT | MOD_SHIFT, KeySave);
+                
                 return true;
             }
         }
