@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:FlightRecorder.Client"
         mc:Ignorable="d"
-        Title="Flight Recorder" Height="307" d:Height="500" Width="450" MinWidth="450" Closing="Window_Closing">
+        Title="Flight Recorder" Height="375" d:Height="700" Width="520" MinWidth="500" Closing="Window_Closing">
 
     <Grid Margin="5">
         <StackPanel>
@@ -17,16 +17,50 @@
                     <ColumnDefinition />
                     <ColumnDefinition />
                 </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
                 <Button Click="ButtonRecord_Click"
                         Grid.Column="0"
+                        Grid.Row="0"
                         IsEnabled="{Binding State, Converter={StaticResource ValueToTrueConverter}, ConverterParameter=IdleEmpty|IdleSaved|IdleUnsaved}">
                     Record
                 </Button>
                 <Button Click="ButtonStop_Click"
                         Grid.Column="1"
+                        Grid.Row="0"
                         IsEnabled="{Binding State, Converter={StaticResource ValueToTrueConverter}, ConverterParameter=Recording}">
                     Stop Recording
                 </Button>
+                <CheckBox Grid.Row="1" Grid.Column="0" 
+                          Name="chkLandingRecord" Margin="6" 
+                          VerticalContentAlignment="Center" 
+                          HorizontalAlignment="Left" 
+                          Click="chkLandingRecord_Click" 
+                          IsEnabled="{Binding State, Converter={StaticResource ValueToTrueConverter}, ConverterParameter=IdleEmpty|IdleSaved|IdleUnsaved}">Automatically Record Landings</CheckBox>
+                <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Margin="0,8,0,0">
+                    <TextBox Name="txtFlyingAltitudeThreshold" Margin="4,0,0,0" VerticalContentAlignment="Center" 
+                             HorizontalContentAlignment="Center" Height="24" MaxHeight="24" MinHeight="24" 
+                             Width="60" LostFocus="TextBox_LostFocus" KeyUp="TextBox_KeyUp"
+                             IsEnabled="{Binding State, Converter={StaticResource ValueToTrueConverter}, ConverterParameter=IdleEmpty|IdleSaved|IdleUnsaved}"></TextBox>
+                    <Label VerticalContentAlignment="Center">Flying Altitude Threshold (AGL)</Label>
+                </StackPanel>
+                <StackPanel Grid.Row="2" Grid.Column="0" Orientation="Horizontal" Margin="0,8,0,0">
+                    <TextBox Name="txtLandingAltitudeThreshold" Margin="4,0,0,0" VerticalContentAlignment="Center" 
+                             HorizontalContentAlignment="Center" Height="24" MaxHeight="24" MinHeight="24" Width="60" 
+                             LostFocus="TextBox_LostFocus" KeyUp="TextBox_KeyUp"
+                             IsEnabled="{Binding State, Converter={StaticResource ValueToTrueConverter}, ConverterParameter=IdleEmpty|IdleSaved|IdleUnsaved}"></TextBox>
+                    <Label VerticalContentAlignment="Center">Landing Altitude Threshold (AGL)</Label>
+                </StackPanel>
+                <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Horizontal" Margin="0,8,0,0">
+                    <TextBox Name="txtLandingVSRate" Margin="4,0,0,0" VerticalContentAlignment="Center" 
+                             HorizontalContentAlignment="Center" Height="24" MaxHeight="24" MinHeight="24" 
+                             Width="60" LostFocus="TextBox_LostFocus" KeyUp="TextBox_KeyUp"
+                             IsEnabled="{Binding State, Converter={StaticResource ValueToTrueConverter}, ConverterParameter=IdleEmpty|IdleSaved|IdleUnsaved}"></TextBox>
+                    <Label VerticalContentAlignment="Center">Landing VS Rate (FPM)</Label>
+                </StackPanel>
             </Grid>
 
             <Rectangle Style="{StaticResource SeparatorStyle}" />

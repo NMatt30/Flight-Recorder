@@ -177,6 +177,8 @@ namespace FlightRecorder.Client
         public double AccelerationBodyY;
         [SimConnectVariable(Name = "ACCELERATION BODY Z", Unit = "Feet per second squared", Type = SIMCONNECT_DATATYPE.FLOAT64, SetType = SetType.None)]
         public double AccelerationBodyZ;
+        [SimConnectVariable(Name = "VERTICAL SPEED", Unit = "Feet per second", Type = SIMCONNECT_DATATYPE.FLOAT64, SetType = SetType.None)]
+        public double VerticalSpeed;
     }
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]

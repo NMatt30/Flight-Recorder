@@ -280,7 +280,7 @@ public class StateMachine : StateMachineCore
             }
             return await dialogLogic.PickSaveFileAsync();
         }
-
+        
         var filePath = await GetSavePath();
 
         if (string.IsNullOrEmpty(filePath))

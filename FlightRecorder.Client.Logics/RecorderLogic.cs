@@ -3,11 +3,13 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
+
 
 namespace FlightRecorder.Client.Logics;
 
 public class RecorderLogic : IRecorderLogic, IDisposable
-{
+{ 
     public event EventHandler<RecordsUpdatedEventArgs>? RecordsUpdated;
 
     private readonly ILogger<RecorderLogic> logger;
