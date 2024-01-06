@@ -39,10 +39,17 @@ public class TriggerRecordingLogic
 {
     private enum AircraftState
     {
-        Landed,
+        Stopped,
+        StartDepartureRecording,
+        Departing,
+        StopDepartureRecording,
+        SaveDepartureRecording,
         Flying,
-        Record,
-        Landing
+        StartArrivalRecording,
+        Arriving,
+        StopArrivalRecording,
+        SaveArrivalRecording,
+        Landed
     }
     private AircraftState aircraftState;
 
@@ -50,6 +57,8 @@ public class TriggerRecordingLogic
     private int landingTransitionAltitude = 1500;
     private int landingVSThreshold = -250;
     private double filteredVerticalSpeed = 0;
+    private bool recordTakeoff = false;
+    private bool recordLanding = false;
 
     private readonly StateMachine stateMachine;
     private IIRFilter vsFilter;
@@ -57,17 +66,18 @@ public class TriggerRecordingLogic
     public int FlightInitiatedAltitude { get { return flightInitiatedAltitude; } set { flightInitiatedAltitude = value;} }
     public int LandingTransitionAltitude { get { return landingTransitionAltitude; } set { landingTransitionAltitude = value;} }
     public int LandingVSThreshold { get { return landingVSThreshold; } set { landingVSThreshold= value;} }
+    public bool RecordTakeoff { get { return recordTakeoff; } set { recordTakeoff = value; } }
+    public bool RecordLanding { get { return recordLanding; } set { recordLanding = value; } }
 
     private bool IsInReplayMode => (stateMachine.CurrentState == StateMachine.State.ReplayingSaved) | (stateMachine.CurrentState == StateMachine.State.ReplayingUnsaved);
 
     public TriggerRecordingLogic(StateMachine stateMachine) 
     {
         this.stateMachine = stateMachine;
-        aircraftState = AircraftState.Landed;
+        aircraftState = AircraftState.Stopped;
 
         vsFilter = new IIRFilter(0.1);
     }
-
     public void ProcessAircraftState(AircraftPositionStruct? position)
     {
         if (!IsInReplayMode)
@@ -75,34 +85,98 @@ public class TriggerRecordingLogic
             filteredVerticalSpeed = vsFilter.Filter((double)position?.VerticalSpeed) * 60;
             switch (aircraftState)
             {
-                case AircraftState.Landed:
-                    if (position?.AltitudeAboveGround >= flightInitiatedAltitude)
+                case AircraftState.Stopped:
+                    if (position?.GroundSpeed > 10 &&
+                        position?.IsOnGround == 1)
                     {
-                        aircraftState = AircraftState.Flying;
+                        if (RecordTakeoff)
+                        {
+                            aircraftState = AircraftState.StartDepartureRecording;
+                        }
+                        else
+                        {
+                            aircraftState = AircraftState.Departing;
+                        }
                     }
+                    break;
+
+                case AircraftState.StartDepartureRecording:
+                    stateMachine.TransitFromShortcutAsync(StateMachine.Event.Record);
+                    aircraftState = AircraftState.Departing;
+                    break;
+
+                case AircraftState.Departing:
+                    if (position?.AltitudeAboveGround > landingTransitionAltitude)
+                    {
+                        if (RecordTakeoff)
+                        {
+                            aircraftState = AircraftState.StopDepartureRecording;
+                        }
+                        else
+                        {
+                            aircraftState = AircraftState.Flying;
+                        }
+                    }
+                    break;
+
+                case AircraftState.StopDepartureRecording:
+                    stateMachine.TransitFromShortcutAsync(StateMachine.Event.Stop);
+                    aircraftState = AircraftState.SaveDepartureRecording;
+                    break;
+
+                case AircraftState.SaveDepartureRecording:
+                    stateMachine.TransitFromShortcutAsync(StateMachine.Event.Save);
+                    aircraftState = AircraftState.Flying;
                     break;
 
                 case AircraftState.Flying:
                     if (position?.AltitudeAboveGround < landingTransitionAltitude &&
-                        filteredVerticalSpeed <= landingVSThreshold)
+                       filteredVerticalSpeed <= landingVSThreshold)
                     {
-                        aircraftState = AircraftState.Record;
+                        if (RecordLanding)
+                        {
+                            aircraftState = AircraftState.StartArrivalRecording;
+                        }
+                        else
+                        {
+                            aircraftState = AircraftState.Arriving;
+                        }
+
                     }
                     break;
 
-                case AircraftState.Record:
+                case AircraftState.StartArrivalRecording:
                     stateMachine.TransitFromShortcutAsync(StateMachine.Event.Record);
-                    aircraftState = AircraftState.Landing;
+                    aircraftState = AircraftState.Arriving;
                     break;
 
-                case AircraftState.Landing:
+                case AircraftState.Arriving:
                     if (position?.GroundSpeed == 0 &&
-                        position?.IsOnGround == 1)
+                       position?.IsOnGround == 1)
                     {
-                        stateMachine.TransitFromShortcutAsync(StateMachine.Event.Stop);
-                        stateMachine.TransitFromShortcutAsync(StateMachine.Event.Save);
-                        aircraftState = AircraftState.Landed;
+                        if (RecordLanding)
+                        {
+                            aircraftState = AircraftState.StopArrivalRecording;
+                        }
+                        else
+                        {
+                            aircraftState = AircraftState.Landed;
+                        }
                     }
+                    break;
+
+                case AircraftState.StopArrivalRecording:
+                    stateMachine.TransitFromShortcutAsync(StateMachine.Event.Stop);
+                    aircraftState = AircraftState.SaveArrivalRecording;
+                    break;
+
+                case AircraftState.SaveArrivalRecording:
+                    stateMachine.TransitFromShortcutAsync(StateMachine.Event.Save);
+                    aircraftState = AircraftState.Landed;
+                    break;
+
+                case AircraftState.Landed:
+                    aircraftState = AircraftState.Stopped;
                     break;
             }
         }

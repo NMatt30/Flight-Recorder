@@ -37,7 +37,7 @@ public partial class MainWindow : BaseWindow
 
     private IntPtr Handle;
 
-    public bool RecordLandings { get; set; }
+    //public bool RecordLandings { get; set; }
 
     public MainWindow(ILogger<MainWindow> logger,
         IConnector connector,
@@ -100,7 +100,7 @@ public partial class MainWindow : BaseWindow
         InitializeConnector();
         await shortcutKeyLogic.RegisterAsync(Handle);
 
-        txtFlyingAltitudeThreshold.Text = triggerRecordingLogic.FlightInitiatedAltitude.ToString();
+        //txtFlyingAltitudeThreshold.Text = triggerRecordingLogic.FlightInitiatedAltitude.ToString();
         txtLandingAltitudeThreshold.Text = triggerRecordingLogic.LandingTransitionAltitude.ToString();
         txtLandingVSRate.Text = triggerRecordingLogic.LandingVSThreshold.ToString();
     }
@@ -140,10 +140,7 @@ public partial class MainWindow : BaseWindow
 
     private void Connector_AircraftPositionUpdated(object? sender, AircraftPositionUpdatedEventArgs e)
     {                            
-        if (RecordLandings)
-        {
-            triggerRecordingLogic.ProcessAircraftState(e.Position);
-        }
+        triggerRecordingLogic.ProcessAircraftState(e.Position);
         recorderLogic.NotifyPosition(e.Position);
         replayLogic.NotifyPosition(e.Position);
 
@@ -362,9 +359,16 @@ public partial class MainWindow : BaseWindow
         }
     }
 
+    private void chkTakeoffRecord_Click(object sender, RoutedEventArgs e)
+    {
+        triggerRecordingLogic.RecordTakeoff = ((CheckBox)sender).IsChecked ?? false;
+        //RecordLandings = ((CheckBox)sender).IsChecked ?? false;
+    }
+
     private void chkLandingRecord_Click(object sender, RoutedEventArgs e)
     {
-        RecordLandings = ((CheckBox)sender).IsChecked ?? false;
+        triggerRecordingLogic.RecordLanding = ((CheckBox) sender).IsChecked ?? false;
+        //RecordLandings = ((CheckBox)sender).IsChecked ?? false;
     }
 
     private void TextBox_LostFocus(object sender, RoutedEventArgs e)
