@@ -277,6 +277,14 @@ public class StateMachine : StateMachineCore
                 {
                     return Path.Combine(folder, $"{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.fltrec");
                 }
+                else
+                {
+                    string documentsPath = Environment.ExpandEnvironmentVariables("%USERPROFILE%\\Documents");
+                    if (Directory.Exists(documentsPath))
+                    {
+                        return Path.Combine(documentsPath, $"{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.fltrec");
+                    }
+                }
             }
             return await dialogLogic.PickSaveFileAsync();
         }
