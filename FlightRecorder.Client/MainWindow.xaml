@@ -59,7 +59,7 @@
                              HorizontalContentAlignment="Center" Height="24" MaxHeight="24" MinHeight="24" 
                              Width="60" LostFocus="TextBox_LostFocus" KeyUp="TextBox_KeyUp"
                              IsEnabled="{Binding State, Converter={StaticResource ValueToTrueConverter}, ConverterParameter=IdleEmpty|IdleSaved|IdleUnsaved}"></TextBox>
-                    <Label VerticalContentAlignment="Center">Transition VS Rate (FPM)</Label>
+                    <Label VerticalContentAlignment="Center">Landing Transition VS Rate (FPM)</Label>
                 </StackPanel>
             </Grid>
 
