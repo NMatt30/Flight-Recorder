@@ -362,13 +362,11 @@ public partial class MainWindow : BaseWindow
     private void chkTakeoffRecord_Click(object sender, RoutedEventArgs e)
     {
         triggerRecordingLogic.RecordTakeoff = ((CheckBox)sender).IsChecked ?? false;
-        //RecordLandings = ((CheckBox)sender).IsChecked ?? false;
     }
 
     private void chkLandingRecord_Click(object sender, RoutedEventArgs e)
     {
         triggerRecordingLogic.RecordLanding = ((CheckBox) sender).IsChecked ?? false;
-        //RecordLandings = ((CheckBox)sender).IsChecked ?? false;
     }
 
     private void TextBox_LostFocus(object sender, RoutedEventArgs e)
