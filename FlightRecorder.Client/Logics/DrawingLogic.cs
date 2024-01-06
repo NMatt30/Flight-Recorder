@@ -41,6 +41,7 @@ public class DrawingLogic
     {
         Task.Run(() =>
         {
+            
             if (currentState == StateMachine.State.Recording || currentState == StateMachine.State.ReplayingSaved || currentState == StateMachine.State.ReplayingUnsaved)
             {
                 drawingThrottleLogic.RunAsync(async () => DrawInternal(records, getCurrentFrame(), currentState, width, height, imageControl), 500);
