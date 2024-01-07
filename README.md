@@ -4,7 +4,7 @@
 
 
 
-Origial application info and lings from nguyenquyhy below:
+Origial application info and links from nguyenquyhy below:
 
 ## Flight Recorder
 
